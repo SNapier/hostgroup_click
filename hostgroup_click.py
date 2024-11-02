@@ -13,7 +13,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "hostgroup_click"
-cversion = "0.0.1"
+cversion = "0.0.2"
 appPath = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -95,7 +95,7 @@ if __name__ == "__main__" :
             
             #GROUP MEMBER LIST IS NOT EMPTY
             if gcount > 0 :
-                print("{} was found in {} of {} toal hostgroups. [{}]".format(i,gcount,tcount,",".join(glist)))
+                print("{} was found in {} of {} total hostgroups. [{}]".format(i,gcount,tcount,",".join(glist)))
             else:
                 print("{} not found in {} total hostgroups.".format(i,tcount))
 
