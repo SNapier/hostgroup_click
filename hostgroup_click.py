@@ -13,7 +13,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "hostgroup_click"
-cversion = "0.0.2"
+cversion = "0.0.3"
 appPath = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -55,12 +55,9 @@ if __name__ == "__main__" :
     hgd = xihlpr.nagiosxiGenericAPI("config","hostgroup","None","get",crds["url"],crds["apikey"])
     hgdj = hgd.json()
     
-    #MATCHING LIST OF MEMBER GROUPS
-    glist = list()
-    
     #COUNT OF HOST MEMBER GROUPS
     gcount = 0
-    
+    glist = list()
     #WE GOT GROUPS
     if hgdj:
         
@@ -71,19 +68,21 @@ if __name__ == "__main__" :
         for i in hl:
             #START COUNT HERE TO AVOID DUPLICATING THE TOTAL IN THE CASE OF MULTIPLE HOSTS
             tcount = 0
-            
+            gcount = 0
+            glist.clear()
+
             #ITERATE THROUGH GROUPS
             for hg in hgdj:
 
                 #INCREMENT TOTAL COUNT
                 tcount += 1
-                
+
                 #IF GROUP HAS MEMBERS
                 if "members" in hg.keys():
                     
                     #LOOP THROUGH MEMBERS
                     for m in hg["members"]:
-                        
+
                         #FIND THE NEEDLE
                         if m == i:
                             
