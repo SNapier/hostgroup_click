@@ -1,4 +1,4 @@
-import requests, argparse, os
+import requests, argparse, os,json
 
 #EXPECTED IN THE SAME DIRECTORY AS THE PLUGIN
 import nagiosxi_plugin_helper as xihlpr
@@ -13,7 +13,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #SCRIPT DEFINITION
 cname = "hostgroup_click"
-cversion = "0.0.3"
+cversion = "0.0.4"
 appPath = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -37,8 +37,15 @@ if __name__ == "__main__" :
         required=True,
         default=None,
         help="String(hostname/hostaddress): The target host or csv list of hosts to search for in the list of nagios hostgroups."
+    ),
+    #MEMBERSHIP ORIGIN
+    args.add_argument(
+        "-o","--origin",
+        required=False,
+        default=None,
+        action="store_true",
+        help="Boolean(origin): Determine if hostgroup membership is set at the host or the group level."
     )
-
     #PARSE ARGS
     meta = args.parse_args()
 
@@ -88,15 +95,42 @@ if __name__ == "__main__" :
                             
                             #ADD GROUP TO LIST                    
                             glist.append(hg["hostgroup_name"])
+                            nhost = m
                             
                             #INCREMENT COUNT
                             gcount += 1
             
             #GROUP MEMBER LIST IS NOT EMPTY
             if gcount > 0 :
-                print("{} was found in {} of {} total hostgroups. [{}]".format(i,gcount,tcount,",".join(glist)))
+                msg = "{} was found in {} of {} total hostgroups. [{}]".format(i,gcount,tcount,",".join(glist))
+                #GET THE ORIGIN
+                if meta.origin:
+                    #API LIMITED QUERY
+                    mod = "host_name={}&filter=active".format(nhost)
+                    hconfig = xihlpr.nagiosxiGenericAPI("config","host",mod,"get",crds["url"],crds["apikey"])
+                    
+                    #THE ENDPOINT RETURNS A LIST SO WE NEED TO DEAL WITH THAT
+                    hcfgj = json.dumps(hconfig.json())
+                    hj = json.loads(hcfgj)
+                    
+                    #FIND HOSTGROUPS IS {RESEWNT}
+                    for z in hj:
+                        
+                        if "hostgroups" in z:
+                            dcount = 0
+                            dhglist = list()
+                            
+                            #BUILD THE COUNTS AND LIST OF DIRECT GROUPS
+                            for g in z["hostgroups"]:
+                                dcount += 1
+                                dhglist.append(g)
+                            
+                            #SHOW GROUPS ORIGIN    
+                            msg +=" Membership for {} groups is assigned via the {} host object config. [{}]".format(dcount,nhost,",".join(dhglist))
+
             else:
-                print("{} not found in {} total hostgroups.".format(i,tcount))
+                msg = "{} not found in {} total hostgroups.".format(i,tcount)
+            print(msg)
 
     #THESE ARE NOT THE DROIDS YOU ARE LOOKING FOR...
     else:
