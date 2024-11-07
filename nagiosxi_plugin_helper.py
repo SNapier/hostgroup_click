@@ -5,7 +5,7 @@ from random import *
 #SNAPIER
 
 cname = "nagiosxi_plugin_helper"
-cversion = "0.0.3"
+cversion = "0.0.4"
 appPath = os.path.dirname(os.path.realpath(__file__))
 
 #TEST VALUE
@@ -136,6 +136,20 @@ def nagExit(stateid,msg):
     #EXIT WITH THE STATEID
     sys.exit(int(stateid))
 
+##API QUERY SHORTCUTS
+#GET ALL HOST GROUP DATA
+def getNagiosHostgroupMembers(nsid):
+    
+    hdg = False
+    
+    try:
+        crds = creds(nsid)
+        hdg = nagiosxiGenericAPI("config","hostgroup","None","get",crds["url"],crds["apikey"])
+    except Exception as e:
+        hdg = e
+    finally:
+        return hdg
+    
 ########################################################################################
 #GENERIC PYTHON FUNCTIONS
 ########################################################################################
